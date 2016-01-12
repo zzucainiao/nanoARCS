@@ -1,0 +1,7 @@
+bin_PROGRAMS=nanoARCS
+nanoARCS_SOURCES=test.cpp
+
+nanoARCS_CXXFLAGS=${LOG4CXX_CFLAGS}
+nanoARCS_LDFLAGS=${LOG4CXX_LIBS} 
+
+EXTRA_DIST=log4cxx.properties
