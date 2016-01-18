@@ -4,13 +4,17 @@
 #include <iostream>
 #include <vector>
 
+#include "fles.h"
+
+typedef FLESTable< std::vector<FLESIndex> > FLESIndexTable;
 class Molecule {  
 public:
-    typedef std::vector<double> Site;
+    typedef std::vector<size_t> Site;
     typedef std::vector<double> Quality;
     Molecule() {};
     Molecule(size_t index, const Site& site, const Quality& quality): _index(index), _site(site), _quality(quality) {
     }
+    int split2FLES( FLESIndexTable& table ) const ;
     size_t size() const {
         return _site.size();
     }

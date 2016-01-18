@@ -1,6 +1,5 @@
 #include <iostream>
 #include <string>
-#include <tuple>
 
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
@@ -13,19 +12,23 @@
 
 #include "molecule.h"
 #include "constant.h"
+#include "runner.h"
 
-static log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("arcs.main"));
+static log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("nanoARCS.main"));
 
 int main (int argc, char* argv[]) {
-    std::string help = "Usage: nanoARCS -i inputfile";
     if(argc < 2) {
-        std::cout << help << std::endl;
-        return 0;
+        return RunnerManager::get()->help(argc, argv);
     }
-    const std::string opt_string("i:s:h");
+    RunnerPtr runner = RunnerManager::get()->create(argv[1]);
+    if(!runner) {
+        return RunnerManager::get()->help(argc, argv);
+    }
+
+    const std::string& opt_string = runner->options();
     int opt = -1;
-    boost::property_tree::ptree cmd;
-    while((opt = getopt(argc, argv, opt_string.c_str())) != -1) {
+    Properties cmd;
+    while((opt = getopt(argc - 1, argv + 1, opt_string.c_str())) != -1) {
         std::string key(1, (char)opt);
         if(optarg == NULL) {
             cmd.put(key, NULL);
@@ -33,21 +36,17 @@ int main (int argc, char* argv[]) {
             cmd.put(key, optarg);
         }
     }
-    if(cmd.find("h") != cmd.not_found()) {
-        std::cout << help << std::endl;
-        return 0;
+    Arguments arguments;
+    for(int i = optind + 1; i < argc; ++i) {
+        arguments.push_back(argv[i]);
     }
-    const std::string file = cmd.get< std::string >("i", "NULL");
-    size_t scale = cmd.get< size_t >("s", SCALE);
-    if( boost::filesystem::exists(file) ) {
-        std::ifstream in(file.c_str());
-        MoleculeReader reader(in);
-        Molecule mol;
-        while(reader.read(mol, scale)) {
-            std::cout << mol << std::endl;
-        }
+    const std::string log_config = cmd.get< std::string >("c", kLogConfig);
+    if(boost::filesystem::exists(log_config)) {
+        log4cxx::PropertyConfigurator::configure(log_config);
     } else {
-        LOG4CXX_ERROR(logger, boost::format("load %s failed.") % file);
+        log4cxx::BasicConfigurator::configure();
     }
+
+    return runner->run(cmd, arguments);
     std::cout << "hello world" << std::endl;
 }
