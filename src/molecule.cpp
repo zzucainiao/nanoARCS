@@ -17,20 +17,27 @@ std::ostream& operator<<(std::ostream& os, const Molecule& mol) {
     return os;
 }
 
+void Molecule::clear() {
+    _index = -1;
+    _site.clear();
+    _quality.clear();
+}
 int Molecule::split2FLES(FLESIndexTable& table) const {
     size_t k = FLES::getFLESK(), len = 0;
     Site s;
-    for(Site::const_iterator it = _site.begin(); it != _site.end(); ++it) {
+    int startPos = 0, i = 0;
+    for(Site::const_iterator it = _site.begin(); it != _site.end(); ++it, ++i) {
         if(len + *it > 1.1*k) {
             FLES x(s);
             FLESIndexTable::iterator jt = table.find(x);
             if(jt != table.end()) {
-                jt->second.push_back(FLESIndex(_index, 0));
+                jt->second.push_back(FLESIndex(_index, startPos));
             } else {
-                table[x] = std::vector<FLESIndex>(1, FLESIndex(_index, 0));
+                table[x] = std::vector<FLESIndex>(1, FLESIndex(_index, startPos));
             }
             s.clear();
             s.push_back(*it);
+            startPos = i;
             len = *it;
         } else {
             s.push_back(*it);
@@ -43,7 +50,7 @@ int Molecule::split2FLES(FLESIndexTable& table) const {
         if(jt != table.end()) {
             jt->second.push_back(FLESIndex(_index, 0));
         } else {
-            table[x] = std::vector<FLESIndex>(1, FLESIndex(_index, 0));
+            table[x] = std::vector<FLESIndex>(1, FLESIndex(_index, startPos));
         }
     }
     return 0;
@@ -56,6 +63,7 @@ bool MoleculeReader::read(Molecule& mol, size_t scale) {
     TYPE type = LINE1;
     std::string tmp;
     if(_in) {
+        mol.clear();
         while(getline(_in, tmp)) {
             if(tmp.length() == 0 || tmp[0] == '#') {
                 continue;

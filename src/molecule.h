@@ -15,6 +15,7 @@ public:
     Molecule(size_t index, const Site& site, const Quality& quality): _index(index), _site(site), _quality(quality) {
     }
     int split2FLES( FLESIndexTable& table ) const ;
+    void clear() ;
     size_t size() const {
         return _site.size();
     }

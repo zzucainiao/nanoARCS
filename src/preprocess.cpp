@@ -10,6 +10,7 @@
 
 static log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("nanoARCS.preprocess"));
 int _preprocess_run_(const Properties& opitions, const Arguments& arguments) {
+    LOG4CXX_INFO(logger, boost::format("preprocess begin"));
     int r = 0;
     size_t scale = opitions.get< size_t >("s", SCALE);
     FLES::setFLESK(opitions.get< size_t >("K", FLESK) / scale);
@@ -22,11 +23,12 @@ int _preprocess_run_(const Properties& opitions, const Arguments& arguments) {
         Molecule mol;
         size_t molNum = 0;
         while(reader.read(mol, scale)) {
-        //    std::cout << mol << std::endl;
+            std::cout << mol << std::endl;
             ++molNum;
             mol.split2FLES(table);
         }   
-        LOG4CXX_ERROR(logger, boost::format("read molecule number = [%d]") % molNum);
+        LOG4CXX_INFO(logger, boost::format("read molecule number = [%d]") % molNum);
+        LOG4CXX_INFO(logger, boost::format("cut to FLES number = [%d]") % table.size());
     } else {
         if(file != "no_file") {
             LOG4CXX_ERROR(logger, boost::format("load %s failed.") % file);
@@ -35,17 +37,29 @@ int _preprocess_run_(const Properties& opitions, const Arguments& arguments) {
         }
         return 1;
     }
-    
-    std::cout << "FLES:" << std::endl;
+    std::string outFile = opitions.get< std::string >("O", FLESFILE);
+    std::ofstream os(outFile.c_str());
     typedef const std::pair<FLES, std::vector<FLESIndex> > const_pair;
     BOOST_FOREACH(const_pair& x, table) {
-        std::cout << x.first << std::endl;
+        os << x.first << std::endl;
+        int first = 1;
+        BOOST_FOREACH(const FLESIndex& index, x.second) {
+            if(first) {
+                first = 0;
+            } else {
+                os << "|";
+            }
+            os << index._molIndex << " " << index._pos;
+        }
+        os << std::endl;
     }
+    
+    LOG4CXX_INFO(logger, boost::format("preprocess end"));
     return r;
 }
 
 Preprocess Preprocess::_runner;
-Preprocess::Preprocess() : Runner("s:i:hK:") {
+Preprocess::Preprocess() : Runner("s:i:hK:O:") {
     RUNNER_INSTALL("preprocess", this, "preprocess");
 }
 
