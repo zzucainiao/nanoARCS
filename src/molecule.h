@@ -6,7 +6,6 @@
 
 #include "fles.h"
 
-typedef FLESTable< std::vector<FLESIndex> > FLESIndexTable;
 class Molecule {  
 public:
     typedef std::vector<size_t> Site;

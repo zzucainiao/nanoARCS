@@ -23,7 +23,7 @@ int _preprocess_run_(const Properties& opitions, const Arguments& arguments) {
         Molecule mol;
         size_t molNum = 0;
         while(reader.read(mol, scale)) {
-            std::cout << mol << std::endl;
+            //std::cout << mol << std::endl;
             ++molNum;
             mol.split2FLES(table);
         }   

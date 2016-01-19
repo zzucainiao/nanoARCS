@@ -24,33 +24,24 @@ void Molecule::clear() {
 }
 int Molecule::split2FLES(FLESIndexTable& table) const {
     size_t k = FLES::getFLESK(), len = 0;
-    Site s;
-    int startPos = 0, i = 0;
+    int i = 0;
     for(Site::const_iterator it = _site.begin(); it != _site.end(); ++it, ++i) {
-        if(len + *it > 1.1*k) {
+        Site::const_iterator kt = it;
+        Site s;
+        size_t len = 0;
+        while(kt != _site.end() && (len < 0.8*k || len + *kt < 1.2*k)) {
+            s.push_back(*kt);
+            len += *kt;
+            ++kt;
+        }
+        if(len >= 0.8*k) {
             FLES x(s);
             FLESIndexTable::iterator jt = table.find(x);
             if(jt != table.end()) {
-                jt->second.push_back(FLESIndex(_index, startPos));
+                jt->second.push_back(FLESIndex(_index, i));
             } else {
-                table[x] = std::vector<FLESIndex>(1, FLESIndex(_index, startPos));
+                table[x] = std::vector<FLESIndex>(1, FLESIndex(_index, i));
             }
-            s.clear();
-            s.push_back(*it);
-            startPos = i;
-            len = *it;
-        } else {
-            s.push_back(*it);
-            len += *it;
-        }
-    }
-    if(len > 0.8*k) {
-        FLES x(s);
-        FLESIndexTable::iterator jt = table.find(x);
-        if(jt != table.end()) {
-            jt->second.push_back(FLESIndex(_index, 0));
-        } else {
-            table[x] = std::vector<FLESIndex>(1, FLESIndex(_index, startPos));
         }
     }
     return 0;

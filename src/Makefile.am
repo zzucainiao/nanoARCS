@@ -9,7 +9,11 @@ nanoARCS_SOURCES=main.cpp \
 				preprocess.h \
 				config.h \
 				fles.cpp \
-				fles.h
+				fles.h \
+				category.cpp \
+				category.h \
+				cluster.cpp \
+				cluster.h
 
 nanoARCS_CXXFLAGS=${LOG4CXX_CFLAGS}
 nanoARCS_LDFLAGS=${LOG4CXX_LIBS} \

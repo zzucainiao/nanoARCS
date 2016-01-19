@@ -30,6 +30,9 @@ public:
         static std::hash< size_t > hasher;
         return hasher( std::accumulate(_site.begin(), _site.end(), 0, cal()) );
     }
+    const Site& getSite() const{
+        return _site;
+    }
     static void setFLESK(size_t FLESK) {
         _FLESK = FLESK;
     }
@@ -54,5 +57,6 @@ struct FLESIndex {
 template<class V>
 using FLESTable = std::unordered_map< FLES, V, FLESHasher >;
 
+typedef FLESTable< std::vector<FLESIndex> > FLESIndexTable;
 #endif
 
