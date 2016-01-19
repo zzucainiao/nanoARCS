@@ -55,7 +55,7 @@ bool MoleculeReader::read(Molecule& mol, size_t scale) {
     std::string tmp;
     if(_in) {
         mol.clear();
-        while(getline(_in, tmp)) {
+        while(std::getline(_in, tmp)) {
             if(tmp.length() == 0 || tmp[0] == '#') {
                 continue;
             }

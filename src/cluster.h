@@ -1,5 +1,5 @@
-#ifndef overlap_graph_h_
-#define overlap_graph_h_
+#ifndef cluster_h_
+#define cluster_h_
 
 #include <vector>
 

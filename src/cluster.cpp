@@ -15,7 +15,7 @@ void Cluster::clusting(const FLESIndexTable& table, Categorys& categorys) {
     }
     size_t maxWinNum = 10;
     int iter = 0;
-    while(iter < ITERTIME) {
+    while(iter++ < ITERTIME) {
         size_t sumLength = FLES::getFLESK();
         size_t winNum = std::max((size_t)6, maxWinNum--);
         std::vector< size_t > windows;
