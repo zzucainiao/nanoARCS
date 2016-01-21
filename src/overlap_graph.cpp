@@ -11,11 +11,14 @@
 #include "overlap_graph.h"
 #include "category.h"
 #include "cluster.h"
+#include "constant.h"
 
 static log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("nanoARCS.overlap_graph"));
 int _overlap_graph_run_(const Properties& opitions, const Arguments& arguments) {
     LOG4CXX_INFO(logger, boost::format("overlap_graph begin"));
     int r = 0;
+    size_t K = opitions.get< size_t >("K", FLESK) / opitions.get< size_t >("s", SCALE);
+    FLES::setFLESK(K);
     const std::string FLESFile = opitions.get< std::string >("i", "no_file");
     FLESIndexTable table;
     if(boost::filesystem::exists(FLESFile)) {
@@ -23,13 +26,9 @@ int _overlap_graph_run_(const Properties& opitions, const Arguments& arguments) 
         FLESReader reader(in);
         std::pair<FLES, std::vector<FLESIndex> > fles;
         while(reader.read(fles)) {
-            std::cout << fles.first << std::endl;
-            BOOST_FOREACH(FLESIndex& index, fles.second) {
-                std::cout << index._molIndex << " " << index._pos << "|";
-            }
-            std::cout << std::endl;
             table.insert(fles);
         }
+        LOG4CXX_INFO(logger, boost::format("FLES num = %d") % table.size());
     } else {
         if(FLESFile != "no_file") {
             LOG4CXX_ERROR(logger, boost::format("load %s failed") % FLESFile);
@@ -40,9 +39,10 @@ int _overlap_graph_run_(const Properties& opitions, const Arguments& arguments) 
     Cluster cluster;
     Categorys categorys;
     cluster.clusting(table, categorys);
-    BOOST_FOREACH(Category& ca, categorys) {
-        std::cout << ca << std::endl;
-    }
+    Graph g(categorys);
+    std::string graphFileName = opitions.get< std::string >("o", GRAPHFILE);
+    std::ofstream os(graphFileName.c_str());
+    os << g;
     LOG4CXX_INFO(logger, boost::format("overlap_graph end"));
     return r;
 }

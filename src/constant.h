@@ -8,5 +8,6 @@ extern const int MINCUT; //molecule.size >= MINCUT
 extern const size_t SCALE;
 extern const size_t FLESK;
 extern const std::string FLESFILE;
+extern const std::string GRAPHFILE;
 extern const int ITERTIME;
 #endif
