@@ -9,14 +9,19 @@
 
 class Cluster {
 public:
-    Cluster(){} 
+    Cluster(size_t scale, double p_value = 0.02): _scale(scale), _p_value(p_value){} 
     void clusting(const FLESIndexTable& table, Categorys& categorys);
 private:
     void getWindows(size_t sumLength, size_t winNum, std::vector< size_t >& windows) ;
     size_t getType(const std::vector< size_t >& windows, const Category& ca) ;
-    void clusting(const Categorys& cas, Categorys& re) ;
-    bool alignment(const Category& x, const Category& y) const ;
-
+    void clusting(double p_value_threshold, const Categorys& cas, Categorys& re) ;
+    double alignment(const Category& x, const Category& y) const ;
+    double pMiss(int missNum) const ;
+    double score(long long matchError, int missNum) const ;
+    double gaussion(long long matchErroe) const ;
+    double backGaussion(long long matchError) const ;
+    size_t _scale;
+    double _p_value;
 };
 
 class Graph {

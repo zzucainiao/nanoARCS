@@ -17,8 +17,9 @@ static log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("nanoARCS.overlap_gr
 int _overlap_graph_run_(const Properties& opitions, const Arguments& arguments) {
     LOG4CXX_INFO(logger, boost::format("overlap_graph begin"));
     int r = 0;
-    size_t K = opitions.get< size_t >("K", FLESK) / opitions.get< size_t >("s", SCALE);
-    FLES::setFLESK(K);
+    size_t flesK = opitions.get< size_t >("K", FLESK);
+    size_t scale = opitions.get< size_t >("s", SCALE);
+    FLES::setFLESK(flesK / scale);
     const std::string FLESFile = opitions.get< std::string >("i", "no_file");
     FLESIndexTable table;
     if(boost::filesystem::exists(FLESFile)) {
@@ -36,7 +37,7 @@ int _overlap_graph_run_(const Properties& opitions, const Arguments& arguments) 
             LOG4CXX_ERROR(logger, boost::format("use -i to specify a input file"));
         }
     }
-    Cluster cluster;
+    Cluster cluster(scale);
     Categorys categorys;
     cluster.clusting(table, categorys);
     Graph g(categorys);
