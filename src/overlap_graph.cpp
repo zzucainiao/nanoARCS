@@ -27,7 +27,9 @@ int _overlap_graph_run_(const Properties& opitions, const Arguments& arguments) 
         FLESReader reader(in);
         std::pair<FLES, std::vector<FLESIndex> > fles;
         while(reader.read(fles)) {
-            table.insert(fles);
+            if(fles.first.getSite().size() > FLESLENGTHCUTOFF) { 
+                table.insert(fles);
+            }
         }
         LOG4CXX_INFO(logger, boost::format("FLES num = %d") % table.size());
     } else {

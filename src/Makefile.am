@@ -20,6 +20,8 @@ nanoARCS_SOURCES=main.cpp \
 nanoARCS_CXXFLAGS=${LOG4CXX_CFLAGS}
 nanoARCS_LDFLAGS=${LOG4CXX_LIBS} \
 				-lboost_filesystem \
-				-lboost_system
+				-lboost_system \
+				-lboost_thread \
+				-lboost_iostreams
 
 EXTRA_DIST=log4cxx.properties

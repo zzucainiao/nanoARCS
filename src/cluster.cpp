@@ -11,6 +11,9 @@
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
 #include <boost/math/distributions/normal.hpp>
+#include <boost/bind.hpp>
+#include <boost/thread/mutex.hpp>
+#include "threadpool-0_2_5-src/threadpool/boost/threadpool.hpp"
 #include <log4cxx/logger.h>
 
 #include "cluster.h"
@@ -45,22 +48,23 @@ void Cluster::clusting(const FLESIndexTable& table, Categorys& categorys) {
 
     LOG4CXX_INFO(logger, boost::format("p-value sroce.size = %d mean = %lf var = %lf") % scores.size() % (re.first/scores.size()) % (re.second - (x.first*x.first)/scores.size()) );
     
-    boost::math::normal_distribution<> normal(re.first / scores.size(), re.second - (x.first*x.first / scores.size()));
+    boost::math::normal_distribution<> normal(re.first / scores.size(), std::sqrt( re.second - (x.first*x.first / scores.size()) ));
     double p_value_threshold = boost::math::quantile(normal, 1-_p_value);
 
     LOG4CXX_INFO(logger, boost::format("p-value_threshold = %lf") % p_value_threshold );
-    size_t maxWinNum = 8;
+    for(i = 0; (1LL<<i)*256 < categorys.size(); ++i) ;
+    long long maxWinNum = i-1;
+    LOG4CXX_INFO(logger, boost::format("maxWinNum = %d") % maxWinNum);
     int iter = 0;
     //std::srand(time(NULL));
+    boost::threadpool::pool pl(64);
     while(iter++ < ITERTIME) {
         LOG4CXX_INFO(logger, boost::format("cluster iter = %d") % iter);
         size_t sumLength = FLES::getFLESK();
-        size_t winNum = std::max((size_t)6, maxWinNum--);
+        size_t winNum = static_cast<size_t>(std::max(6LL, maxWinNum--));
         //cluster roughly based on windows
         std::vector< size_t > windows;
-        std::cout << "wangbing1" << std::endl;
         getWindows(sumLength, winNum, windows);
-        std::cout << "wangbing2" << std::endl;
 
         typedef std::map<size_t, Categorys> Type2Categorys;
         Type2Categorys type2Category;
@@ -75,14 +79,20 @@ void Cluster::clusting(const FLESIndexTable& table, Categorys& categorys) {
                 type2Category.insert( make_pair(type, x) );
             }
         }
-        std::cout << "wangbing3" << std::endl;
         Categorys tmp;
         typedef const std::pair<size_t, Categorys> Value;
+        int typeNum = 0;
         BOOST_FOREACH(Value& v, type2Category) {
-            LOG4CXX_DEBUG(logger, boost::format("iterator = %d type = %d size = %d") % iter % v.first % v.second.size());
-            clusting(p_value_threshold, v.second, tmp);
+            pl.schedule(boost::bind((&Cluster::clusting), this, v.first, p_value_threshold, v.second, &tmp));
+            ++typeNum;
+            //clusting(v.first, p_value_threshold, v.second, &tmp);
         }
-        std::cout << "wangbing4" << std::endl;
+        size_t active = pl.active();
+        size_t pending = pl.pending();
+        size_t size = pl.size();
+        LOG4CXX_DEBUG(logger, boost::format("threadpool active = %d pending = %d size = %d typeNum = %d") % active % pending % size % typeNum);
+
+        pl.wait();
         categorys.swap(tmp);
     }
 }
@@ -106,7 +116,8 @@ size_t Cluster::getType(const std::vector< size_t >& windows, const Category& ca
     return re;
 }
 
-void Cluster::clusting(double p_value_threshold, const Categorys& cas, Categorys& re) {
+void Cluster::clusting(size_t type, double p_value_threshold, const Categorys& cas, Categorys* re) {
+//     LOG4CXX_DEBUG(logger, boost::format("type = %d size = %d") % type % cas.size());
     std::vector< std::vector<size_t> > adj;
     adj.resize( cas.size() );
     for(size_t i = 0; i < cas.size(); ++i) {
@@ -141,7 +152,8 @@ void Cluster::clusting(double p_value_threshold, const Categorys& cas, Categorys
             }
         }
         ca.setSite(cas[center].getSite());
-        re.push_back(ca);
+        boost::unique_lock< boost::mutex > lock(_mtx);
+        re->push_back(ca);
     }
 }
 

@@ -4,6 +4,8 @@
 #include <vector>
 #include <map>
 
+#include <boost/thread/mutex.hpp>
+
 #include "category.h"
 #include "fles.h"
 
@@ -14,7 +16,7 @@ public:
 private:
     void getWindows(size_t sumLength, size_t winNum, std::vector< size_t >& windows) ;
     size_t getType(const std::vector< size_t >& windows, const Category& ca) ;
-    void clusting(double p_value_threshold, const Categorys& cas, Categorys& re) ;
+    void clusting(size_t type, double p_value_threshold, const Categorys& cas, Categorys* re) ;
     double alignment(const Category& x, const Category& y) const ;
     double pMiss(int missNum) const ;
     double score(long long matchError, int missNum) const ;
@@ -22,6 +24,7 @@ private:
     double backGaussion(long long matchError) const ;
     size_t _scale;
     double _p_value;
+    boost::mutex _mtx;
 };
 
 class Graph {
