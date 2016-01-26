@@ -7,5 +7,5 @@ const size_t SCALE = 100;
 const size_t FLESK = 100000;
 const std::string FLESFILE = "FLES.out";
 const std::string GRAPHFILE = "OVERLAPGRAP.out";
-const int ITERTIME = 10;
+const int ITERTIME = 3;
 const size_t FLESLENGTHCUTOFF = 3;

@@ -39,7 +39,8 @@ int _overlap_graph_run_(const Properties& opitions, const Arguments& arguments) 
             LOG4CXX_ERROR(logger, boost::format("use -i to specify a input file"));
         }
     }
-    Cluster cluster(scale);
+    double p_value = 0.02;
+    Cluster cluster(scale, p_value);
     Categorys categorys;
     cluster.clusting(table, categorys);
     Graph g(categorys);

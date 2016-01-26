@@ -7,13 +7,14 @@
 #include <algorithm>
 #include <map>
 #include <queue>
+#include <fstream>
 
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
 #include <boost/math/distributions/normal.hpp>
 #include <boost/bind.hpp>
 #include <boost/thread/mutex.hpp>
-#include "threadpool-0_2_5-src/threadpool/boost/threadpool.hpp"
+#include <boost/threadpool.hpp>
 #include <log4cxx/logger.h>
 
 #include "cluster.h"
@@ -35,33 +36,38 @@ void Cluster::clusting(const FLESIndexTable& table, Categorys& categorys) {
     }
     //p-value for score;
     std::vector<double> scores;
-    int simpleNumber = 1000;
+    int simpleNumber = 10000;
     for(int i=0; i<simpleNumber; ++i) {
         size_t x = rand() % table.size();
         size_t y = rand() % table.size();
         if(x != y) {
-            scores.push_back( alignment(categorys[x], categorys[y]));
+            scores.push_back(alignment(categorys[x], categorys[y]));
         }
     }
-    std::pair<double, double> x(0.0, 0.0);
-    std::pair<double, double> re = std::accumulate(scores.begin(), scores.end(), x, Statistic()); 
 
-    LOG4CXX_INFO(logger, boost::format("p-value sroce.size = %d mean = %lf var = %lf") % scores.size() % (re.first/scores.size()) % (re.second - (x.first*x.first)/scores.size()) );
+    std::pair<double, double> x(0.0, 0.0);
+    std::pair<double, double> re = std::accumulate(scores.begin(), scores.end(), x, Statistic());
     
-    boost::math::normal_distribution<> normal(re.first / scores.size(), std::sqrt( re.second - (x.first*x.first / scores.size()) ));
+    boost::math::normal_distribution<> normal(re.first / scores.size(), std::sqrt( re.second/scores.size() - (re.first*re.first)/(scores.size()*scores.size())) );
     double p_value_threshold = boost::math::quantile(normal, 1-_p_value);
 
-    LOG4CXX_INFO(logger, boost::format("p-value_threshold = %lf") % p_value_threshold );
-    for(i = 0; (1LL<<i)*256 < categorys.size(); ++i) ;
-    long long maxWinNum = i-1;
-    LOG4CXX_INFO(logger, boost::format("maxWinNum = %d") % maxWinNum);
+    int count = std::count_if(scores.begin(), scores.end(), std::bind2nd(std::greater<int>(), p_value_threshold));
+    std::ofstream sos("score.out");
+    BOOST_FOREACH(double s, scores) {
+        sos << s << std::endl;
+    }
+
+    LOG4CXX_INFO(logger, boost::format("sroce.size = %d >p_threshold size = %d mean = %lf var = %lf") % scores.size() % count % (re.first/scores.size()) % (re.second/scores.size() - (re.first*re.first)/(scores.size()*scores.size())) );
+    LOG4CXX_INFO(logger, boost::format("p-value = %lf p-value_threshold = %lf") % _p_value % p_value_threshold );
     int iter = 0;
     //std::srand(time(NULL));
     boost::threadpool::pool pl(64);
     while(iter++ < ITERTIME) {
-        LOG4CXX_INFO(logger, boost::format("cluster iter = %d") % iter);
+        LOG4CXX_INFO(logger, boost::format("cluster iter = %d Categorys size = %d") % iter % categorys.size());
         size_t sumLength = FLES::getFLESK();
-        size_t winNum = static_cast<size_t>(std::max(6LL, maxWinNum--));
+        for(i = 0; (1LL<<i)*256 < categorys.size(); ++i) ;
+        size_t winNum = i;
+        LOG4CXX_INFO(logger, boost::format("winNum = %d") % winNum);
         //cluster roughly based on windows
         std::vector< size_t > windows;
         getWindows(sumLength, winNum, windows);
@@ -158,7 +164,7 @@ void Cluster::clusting(size_t type, double p_value_threshold, const Categorys& c
 }
 
 double Cluster::alignment(const Category& x, const Category& y) const {
-    std::vector< std::vector<double> > dp(x.size() + 1, std::vector<double>(y.size() + 1, DBL_MIN));
+    std::vector< std::vector<double> > dp(x.size() + 1, std::vector<double>(y.size() + 1, -DBL_MAX));
     dp[0][0] = 0.0;
     for(int i = 1; i <= x.size(); ++i) {
         dp[i][0] = pMiss(i);
@@ -169,7 +175,7 @@ double Cluster::alignment(const Category& x, const Category& y) const {
     for(int i = 1; i <= x.size(); ++i) {
         for(int j = 1; j <= y.size(); ++j) {
             long long lenx = x[i - 1], leny = y[j - 1];
-            double mxScore = DBL_MIN;
+            double mxScore = -DBL_MAX;
             for(int miss = 0; miss < 3 && i-1-miss>=0; ++miss) {
                 double tmp = dp[i-1-miss][j-1] + score(std::abs(lenx-leny), miss);
                 if( i-1-miss - 1 >=0 ) {
@@ -179,7 +185,7 @@ double Cluster::alignment(const Category& x, const Category& y) const {
             }
             lenx = x[i - 1], leny = y[j - 1];
             for(int miss = 0; miss < 3 && j-1-miss>=0; ++miss) {
-                double tmp = dp[i-1][j-1-miss] + score(abs(lenx-leny), miss);
+                double tmp = dp[i-1][j-1-miss] + score(std::abs(lenx-leny), miss);
                 if( j-1-miss - 1 >= 0) { 
                     leny += y[j-1-miss - 1];
                 }
@@ -188,7 +194,7 @@ double Cluster::alignment(const Category& x, const Category& y) const {
             dp[i][j] = mxScore;
         }
     }
-    double re = DBL_MIN;
+    double re = -DBL_MAX;
     for(int missx = 0; missx <= 2 && x.size()>=missx; ++missx) {
         for(int missy = 0; missy <= 2 && y.size()>=missy; ++missy) {
             re = std::max(re, dp[ x.size()-missx ][ y.size()-missy ]+pMiss(missx + missy));
@@ -200,7 +206,7 @@ double Cluster::alignment(const Category& x, const Category& y) const {
 //match intever miss site fit exponential distribution. 
 double Cluster::pMiss(int missNum) const {
     double lambda = 1.064;
-    return std::log(lambda) + ( -missNum * lambda); 
+    return std::log(lambda) + ((-missNum) * lambda); 
 }
 
 double Cluster::score(long long matchError, int missNum) const {
@@ -208,14 +214,15 @@ double Cluster::score(long long matchError, int missNum) const {
 }
 
 double Cluster::gaussion(long long matchError) const {
-    double mu = 46.0 / _scale;
-    double sigma = 570.0 / _scale;
+    //double mu = 46.0 / _scale;
+    double mu = 0.0 / _scale;
+    double sigma = std::sqrt(2.0) * 570.0 / std::sqrt(_scale);
     return 0.0 - 0.5*std::log(2*3.14) - std::log(sigma) - (matchError-mu)*(matchError-mu)/(2*sigma*sigma);
 }
 
 double Cluster::backGaussion(long long matchError) const {
     double mu = 1870.0 / _scale;
-    double sigma = 10840.0 / _scale;
+    double sigma = 10840.0 / std::sqrt(_scale);
     return 0.0 - 0.5*std::log(2*3.14) - std::log(sigma) - (matchError-mu)*(matchError-mu)/(2*sigma*sigma);
 }
 
@@ -226,8 +233,8 @@ Graph::Graph(const Categorys& cas) {
             for(size_t j = i+1; j < indexes.size(); ++j) {
                 size_t molIndex_i = indexes[i]._molIndex;
                 size_t molIndex_j = indexes[j]._molIndex;
-                size_t pos_i = indexes[i]._pos;
-                size_t pos_j = indexes[j]._pos;
+                long long pos_i = indexes[i]._pos;
+                long long pos_j = indexes[j]._pos;
                 if(molIndex_i == molIndex_j) {
                     continue;
                 }

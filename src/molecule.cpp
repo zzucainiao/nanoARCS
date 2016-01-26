@@ -25,6 +25,7 @@ void Molecule::clear() {
 int Molecule::split2FLES(FLESIndexTable& table) const {
     size_t k = FLES::getFLESK(), len = 0;
     size_t startPos = 0;
+    Site::const_iterator endSite = _site.begin();
     for(Site::const_iterator it = _site.begin(); it != _site.end(); ++it) {
         Site::const_iterator kt = it;
         Site s;
@@ -34,7 +35,9 @@ int Molecule::split2FLES(FLESIndexTable& table) const {
             len += *kt;
             ++kt;
         }
-        if(len >= 0.8*k) {
+        // 2 30 100 100 & 30 100 100 remove 30 100 100
+        if(len >= 0.8*k && kt != endSite) {
+            endSite = kt;
             FLES x(s);
             FLESIndexTable::iterator jt = table.find(x);
             if(jt != table.end()) {
