@@ -6,6 +6,7 @@
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
+#include <boost/assert.hpp>
 #include <log4cxx/logger.h>
 
 #include "overlap_graph.h"
@@ -28,6 +29,7 @@ int _overlap_graph_run_(const Properties& opitions, const Arguments& arguments) 
         std::pair<FLES, std::vector<FLESIndex> > fles;
         while(reader.read(fles)) {
             if(fles.first.getSite().size() > FLESLENGTHCUTOFF) { 
+                BOOST_ASSERT(fles.second.size() > 0 && fles.second[0]._pos != -1);
                 table.insert(fles);
             }
         }

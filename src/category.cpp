@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include <boost/foreach.hpp>
+#include <boost/assert.hpp>
 
 #include "category.h"
 
@@ -30,7 +31,9 @@ const size_t& Category::operator[](int i) const {
 }
 
 Category& Category::operator+=(const Category& x) {
+    BOOST_ASSERT(x._FLESIndexes.size() > 0);
     BOOST_FOREACH(const FLESIndex& ind, x._FLESIndexes) {
+        BOOST_ASSERT(ind._pos != -1);
         _FLESIndexes.push_back(ind);
     }
     return *this;
