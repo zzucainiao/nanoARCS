@@ -1,3 +1,5 @@
+#include "overlap_graph.h"
+
 #include <string>
 #include <map>
 #include <iostream>
@@ -9,7 +11,6 @@
 #include <boost/assert.hpp>
 #include <log4cxx/logger.h>
 
-#include "overlap_graph.h"
 #include "category.h"
 #include "cluster.h"
 #include "constant.h"
@@ -38,7 +39,8 @@ int _overlap_graph_run_(const Properties& opitions, const Arguments& arguments) 
         if(FLESFile != "no_file") {
             LOG4CXX_ERROR(logger, boost::format("load %s failed") % FLESFile);
         } else {
-            LOG4CXX_ERROR(logger, boost::format("use -i to specify a input file"));
+            LOG4CXX_ERROR(logger, boost::format("can't find FLES file. (use -i to specify a input file)"));
+            exit(1);
         }
     }
     double p_value = 0.02;
@@ -75,6 +77,7 @@ int OverlapGraph::checkOpitions(const Properties& opitions) const{
 
 int OverlapGraph::printHelp() const {
     std::cout << "overlap_graph" << std::endl;
+    std::cout << "\t-i FLES.file" << std::endl;
     return 256;
 }
 

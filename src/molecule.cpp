@@ -1,9 +1,9 @@
+#include "molecule.h"
+
 #include <string>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
-
-#include "molecule.h"
 
 std::ostream& operator<<(std::ostream& os, const Molecule& mol) {
     os << mol._index << std::endl;
@@ -24,7 +24,7 @@ void Molecule::clear() {
 }
 int Molecule::split2FLES(FLESIndexTable& table) const {
     size_t k = FLES::getFLESK(), len = 0;
-    size_t startPos = 0;
+    long long startPos = 0;
     Site::const_iterator endSite = _site.begin();
     for(Site::const_iterator it = _site.begin(); it != _site.end(); ++it) {
         Site::const_iterator kt = it;
@@ -40,6 +40,7 @@ int Molecule::split2FLES(FLESIndexTable& table) const {
             endSite = kt;
             FLES x(s);
             FLESIndexTable::iterator jt = table.find(x);
+            BOOST_ASSERT( startPos >= 0 );
             if(jt != table.end()) {
                 jt->second.push_back(FLESIndex(_index, startPos));
             } else {
@@ -81,7 +82,7 @@ bool MoleculeReader::read(Molecule& mol, size_t scale) {
                         pre = boost::lexical_cast< double >(*it);
                     } else {
                         size_t now = boost::lexical_cast< double >(*it);
-                        if( (now - pre) / scale >= 1) {
+                        if( now > pre && (now - pre) / scale >= 1) {
                             mol._site.push_back((now - pre) / scale);
                             pre = now;
                         }

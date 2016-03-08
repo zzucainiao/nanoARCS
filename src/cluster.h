@@ -37,4 +37,4 @@ private:
     MolDisMap _mp;
 };
 
-#endif
+#endif // cluster_h_

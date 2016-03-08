@@ -1,13 +1,17 @@
+#include "fles.h"
+
 #include <iostream>
 
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/format.hpp>
 
-#include "fles.h"
+#include <log4cxx/logger.h>
+
+static log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("nonaARCS.fles"));
 
 size_t FLES::_FLESK = 100000;
-
 std::ostream& operator<<(std::ostream& os, const FLES& x) {
     for(FLES::Site::const_iterator it = x._site.begin(); it != x._site.end(); ++it) {
         os << *it << " ";
@@ -45,8 +49,10 @@ bool FLESReader::read(std::pair<FLES, std::vector<FLESIndex> >& fles) {
                 BOOST_FOREACH(std::string& str, substrs) {
                     boost::trim(str);
                     if(str.length() != 0) {
-                        size_t molIndex, pos;
-                        sscanf(str.c_str(), "%lu%lu", &molIndex, &pos);
+                        size_t molIndex;
+                        long long pos;
+                        sscanf(str.c_str(), "%lu%lld", &molIndex, &pos);
+                        LOG4CXX_TRACE(logger, boost::format("molIndex = %d pos = %d") % molIndex % pos);
                         fles.second.push_back( FLESIndex(molIndex, pos) );
                     }
                 }

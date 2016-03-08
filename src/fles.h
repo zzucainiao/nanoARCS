@@ -61,8 +61,9 @@ struct FLESHasher {
     }
 };
 struct FLESIndex {
-    size_t _molIndex, _pos; 
-    FLESIndex(size_t molIndex = -1, size_t pos = -1): _molIndex(molIndex), _pos(pos) {}
+    size_t _molIndex;
+    long long _pos; 
+    FLESIndex(size_t molIndex = -1, long long pos = -1): _molIndex(molIndex), _pos(pos) {}
 };
 
 class FLESReader {
@@ -77,5 +78,5 @@ template<class V>
 using FLESTable = std::unordered_map< FLES, V, FLESHasher >;
 
 typedef FLESTable< std::vector<FLESIndex> > FLESIndexTable;
-#endif
+#endif // fles_h_
 

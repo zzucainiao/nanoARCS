@@ -1,3 +1,5 @@
+#include "cluster.h"
+
 #include <cstdlib>
 #include <ctime>
 #include <climits>
@@ -17,7 +19,6 @@
 #include <boost/threadpool.hpp>
 #include <log4cxx/logger.h>
 
-#include "cluster.h"
 #include "constant.h"
 
 static log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("nanoARCS.cluster"));
@@ -228,7 +229,7 @@ double Cluster::backGaussion(long long matchError) const {
 
 Graph::Graph(const Categorys& cas) {
     BOOST_FOREACH(const Category& ca, cas) {
-        std::vector< FLESIndex > indexes = ca.getFLESIndexes();
+        const std::vector< FLESIndex >& indexes = ca.getFLESIndexes();
         for(size_t i = 0; i < indexes.size(); ++i) {
             for(size_t j = i+1; j < indexes.size(); ++j) {
                 size_t molIndex_i = indexes[i]._molIndex;
@@ -260,6 +261,7 @@ Graph::Graph(const Categorys& cas) {
 std::ostream& operator<<(std::ostream& os, const Graph& g) {
     typedef std::pair< std::pair<size_t, size_t>, std::vector<long long> > ValueType; 
     BOOST_FOREACH(const ValueType& v, g._mp) {
+        //mid or avrage ???
         os << v.first.first << "\t" << v.first.second << "\t" << v.second[v.second.size()/2] << "\t" << v.second.size() << std::endl;
     } 
     return os;

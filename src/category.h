@@ -23,4 +23,4 @@ private:
 };
 
 typedef std::vector< Category > Categorys;
-#endif
+#endif // category_h_

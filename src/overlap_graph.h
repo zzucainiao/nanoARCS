@@ -12,4 +12,4 @@ private:
     static OverlapGraph _runner;
 };
 
-#endif
+#endif // overlap_graph_h_

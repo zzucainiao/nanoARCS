@@ -36,4 +36,4 @@ private:
     std::istream& _in;
 };
 
-#endif
+#endif // molecule_h_

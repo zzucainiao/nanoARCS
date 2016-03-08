@@ -1,3 +1,5 @@
+#include "preprocess.h"
+
 #include <iostream>
 #include <fstream>
 
@@ -5,7 +7,6 @@
 #include <boost/foreach.hpp>
 #include <log4cxx/logger.h>
 
-#include "preprocess.h"
 #include "molecule.h"
 
 static log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("nanoARCS.preprocess"));
