@@ -14,8 +14,13 @@ nanoARCS_SOURCES=main.cpp \
 				category.h \
 				cluster.cpp \
 				cluster.h \
+				graph.h \
+				graph.cpp \
 				overlap_graph.cpp \
-				overlap_graph.h
+				overlap_graph.h \
+				strategy.h \
+				lp_strategy.h \
+				lp_strategy.cpp
 
 nanoARCS_CXXFLAGS=${LOG4CXX_CFLAGS}
 nanoARCS_LDFLAGS=${LOG4CXX_LIBS} \

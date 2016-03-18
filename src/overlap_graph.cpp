@@ -14,6 +14,7 @@
 #include "category.h"
 #include "cluster.h"
 #include "constant.h"
+#include "graph.h"
 
 static log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("nanoARCS.overlap_graph"));
 int _overlap_graph_run_(const Properties& opitions, const Arguments& arguments) {
