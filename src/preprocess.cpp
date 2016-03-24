@@ -29,7 +29,7 @@ int _preprocess_run_(const Properties& opitions, const Arguments& arguments) {
             mol.split2FLES(table);
         }   
         LOG4CXX_INFO(logger, boost::format("read molecule number = [%d]") % molNum);
-        LOG4CXX_INFO(logger, boost::format("cut to FLES number = [%d]") % table.size());
+        LOG4CXX_INFO(logger, boost::format("cut to FLES number = [%d] FLES per molecure = [%d]") % table.size() % (table.size() / molNum));
     } else {
         if(file != "no_file") {
             LOG4CXX_ERROR(logger, boost::format("load %s failed.") % file);

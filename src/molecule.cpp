@@ -23,6 +23,7 @@ void Molecule::clear() {
     _quality.clear();
 }
 int Molecule::split2FLES(FLESIndexTable& table) const {
+    size_t FLESnumber = 0;
     size_t k = FLES::getFLESK(), len = 0;
     long long startPos = 0;
     Site::const_iterator endSite = _site.begin();
@@ -41,6 +42,7 @@ int Molecule::split2FLES(FLESIndexTable& table) const {
             FLES x(s);
             FLESIndexTable::iterator jt = table.find(x);
             BOOST_ASSERT( startPos >= 0 );
+            ++FLESnumber;
             if(jt != table.end()) {
                 jt->second.push_back(FLESIndex(_index, startPos));
             } else {
@@ -49,7 +51,7 @@ int Molecule::split2FLES(FLESIndexTable& table) const {
         }
         startPos += *it;
     }
-    return 0;
+    return FLESnumber;
 }
 
 bool MoleculeReader::read(Molecule& mol, size_t scale) {

@@ -48,5 +48,4 @@ int main (int argc, char* argv[]) {
     }
 
     return runner->run(cmd, arguments);
-    std::cout << "hello world" << std::endl;
 }

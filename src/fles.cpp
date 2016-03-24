@@ -52,7 +52,7 @@ bool FLESReader::read(std::pair<FLES, std::vector<FLESIndex> >& fles) {
                         size_t molIndex;
                         long long pos;
                         sscanf(str.c_str(), "%lu%lld", &molIndex, &pos);
-                        LOG4CXX_TRACE(logger, boost::format("molIndex = %d pos = %d") % molIndex % pos);
+                        //LOG4CXX_TRACE(logger, boost::format("molIndex = %d pos = %d") % molIndex % pos);
                         fles.second.push_back( FLESIndex(molIndex, pos) );
                     }
                 }

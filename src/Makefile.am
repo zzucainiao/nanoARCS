@@ -18,9 +18,15 @@ nanoARCS_SOURCES=main.cpp \
 				graph.cpp \
 				overlap_graph.cpp \
 				overlap_graph.h \
+				unique_edge_graph.h \
+				unique_edge_graph.cpp \
 				strategy.h \
 				lp_strategy.h \
-				lp_strategy.cpp
+				lp_strategy.cpp \
+				max_overlap_strategy.h \
+				max_overlap_strategy.cpp \
+				graph_solver.cpp \
+				graph_solver.h
 
 nanoARCS_CXXFLAGS=${LOG4CXX_CFLAGS}
 nanoARCS_LDFLAGS=${LOG4CXX_LIBS} \
